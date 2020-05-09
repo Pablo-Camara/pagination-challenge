@@ -129,9 +129,9 @@
             window.paginationChallenge = {
                 page_size: 4,
                 total_pages: 20,
-                current_page: 10,
-                boundaries: 2,
-                around: 2,
+                current_page: 6,
+                boundaries: 1,
+                around: 1,
                 getItemsContainer: function(){
                     return document.getElementById('container-content');
                 },
@@ -188,11 +188,29 @@
                         this.getItemsContainer().appendChild(item);
                     }
                 },
-                configurePagination: function(current_page,total_pages,boundaries,around){
+                configurePagination: function(current_page,total_pages,page_size,boundaries,around){
+                    if(total_pages < 1 || page_size < 1 || isNaN(total_pages) || isNaN(page_size)){
+                        this.getItemsContainer().innerHTML = '';
+                        this.getPaginationContainer().innerHTML = '';
+                        alert('Pages size or Total pages set are empty or invalid. That equals empty results.');
+                        return;
+                    }
+
+                    if(current_page > total_pages || current_page <= 0){ // pages start at 1 
+                        alert('Page ' + current_page + ' does not exist');
+                        return;
+                    }
+
+                    if(boundaries > total_pages){
+                        alert('The max number allowed for the boundaries is the same as the number defined of the total amount of pages.');
+                        boundaries = total_pages;
+                    }
+
                     this.current_page = current_page;
                     this.total_pages = total_pages;
                     this.boundaries = boundaries;
                     this.around = around;
+                    this.page_size = page_size;
 
                     var pagination = {
                         list: [],
@@ -231,16 +249,17 @@
                     for(var i = (total_pages-boundaries)+1; i <= total_pages; i++){
                         pagination.add(i);
                     }
+                   
 
                     this.populateItems(
                         ((current_page * this.page_size) - this.page_size)+1,
                         current_page * this.page_size
                     );
-                    this.renderPaginationLinks(pagination.list,current_page,total_pages,boundaries,around);
+                    this.renderPaginationLinks(pagination.list,current_page,total_pages,page_size,boundaries,around);
 
                     return pagination.list;
                 },
-                renderPaginationLinks: function(pagesArray,current_page,total_pages,boundaries,around){
+                renderPaginationLinks: function(pagesArray,current_page,total_pages,page_size,boundaries,around){
                     this.getPaginationContainer().innerHTML = '';
                     for(var i = 0; i < pagesArray.length; i++){
                         var pageLink = document.createElement('a');
@@ -249,7 +268,7 @@
                         pageLink.innerText = pagesArray[i];
                         pageLink.href = '#';
                         pageLink.onclick = function(e){
-                            window.paginationChallenge.configurePagination(parseInt(e.target.innerText),total_pages,boundaries,around);
+                            window.paginationChallenge.configurePagination(parseInt(e.target.innerText),total_pages,page_size,boundaries,around);
                         };
 
                         if(pagesArray[i] === current_page){
@@ -349,8 +368,7 @@
                 var boundaries = parseInt(document.getElementById('boundaries').value);
                 var around = parseInt(document.getElementById('around').value);
 
-                window.paginationChallenge.page_size = page_size;
-                window.paginationChallenge.configurePagination(current_page,total_pages,boundaries,around);
+                window.paginationChallenge.configurePagination(current_page,total_pages,page_size,boundaries,around);
 
                 configurationsBox.style.display = 'none';
             };

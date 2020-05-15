@@ -168,8 +168,6 @@ $pagination = getPagination($current_page, $boundaries, $around, $total_pages);
 
         <script type="text/javascript">
 
-            
-
             document.getElementById('change_configuration').onclick = function(e){
                 const configBox = document.getElementById('configurations');
                 if(configBox.style.display == 'block'){
@@ -178,7 +176,6 @@ $pagination = getPagination($current_page, $boundaries, $around, $total_pages);
                     configBox.style.display = 'block';
                 }
             };
-
 
         </script>
     </body>

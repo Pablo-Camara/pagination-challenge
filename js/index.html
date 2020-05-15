@@ -1,0 +1,261 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Pagination Challenge</title>
+
+        <link rel="stylesheet" href="styles.css" />
+
+        <script type="text/javascript">
+
+            window.paginationChallenge = {
+                page_size: 4,
+                total_pages: 20,
+                current_page: 6,
+                boundaries: 1,
+                around: 1,
+                getItemsContainer: function(){
+                    return document.getElementById('container-content');
+                },
+                getPaginationContainer: function(){
+                    return document.getElementById('pagination');
+                },
+                createItem: function(title,description,link){
+                    var itemContainer = document.createElement('div');
+                    itemContainer.setAttribute('class','container-content-item');
+
+                    var titleEl = document.createElement('h2');
+                    var descriptionEl = document.createElement('p');
+                    var linkEl = document.createElement('a');
+
+                    titleEl.innerText = title;
+                    descriptionEl.innerText = description;
+                    linkEl.href = link;
+                    linkEl.innerText = 'Open';
+
+                    itemContainer.appendChild(titleEl);
+                    itemContainer.appendChild(descriptionEl);
+                    itemContainer.appendChild(linkEl);
+
+                    return itemContainer;
+                },
+                getItemTitleByIndexOrder(index){
+                    switch(index){
+                        case 1:
+                            return 'First item';
+                            break;
+                        case 2:
+                            return 'Second item';
+                            break;
+                        case 3:
+                            return 'Third item';
+                            break;
+                        default:
+                            return 'Item ' + index;
+                            break;
+                    }
+                },
+                populateItems: function(firstItem,lastItem){
+                    if(lastItem < firstItem){
+                        alert('Error: Last item number can not be lower than the first item!');
+                        return;
+                    }
+                    this.getItemsContainer().innerHTML = '';
+                    for(var i = firstItem; i <= lastItem; i++){
+                        var title = this.getItemTitleByIndexOrder(i);
+                        var description = 'This is the ' + this.getItemTitleByIndexOrder(i).toLowerCase();
+                        var link = "#item" + i;
+                        
+                        var item = this.createItem(title,description,link);
+                        this.getItemsContainer().appendChild(item);
+                    }
+                },
+                configurePagination: function(current_page,total_pages,page_size,boundaries,around){
+                    if(total_pages < 1 || page_size < 1 || isNaN(total_pages) || isNaN(page_size)){
+                        this.getItemsContainer().innerHTML = '';
+                        this.getPaginationContainer().innerHTML = '';
+                        alert('Pages size or Total pages set are empty or invalid. That equals empty results.');
+                        return;
+                    }
+
+                    if(current_page > total_pages || current_page <= 0){ // pages start at 1 
+                        alert('Page ' + current_page + ' does not exist');
+                        return;
+                    }
+
+                    if(boundaries > total_pages){
+                        alert('The max number allowed for the boundaries is the same as the number defined of the total amount of pages.');
+                        boundaries = total_pages;
+                    }
+
+                    this.current_page = current_page;
+                    this.total_pages = total_pages;
+                    this.boundaries = boundaries;
+                    this.around = around;
+                    this.page_size = page_size;
+
+                    var pagination = {
+                        list: [],
+                        add: function(pageNumber){
+                            if(this.list.indexOf(pageNumber) === -1){
+                                this.list.push(pageNumber);
+                            }
+                        }
+                    };
+
+                    // lets do it in an orderly manner 
+                    // may not be the most simple and mathematically formulated but...let's KISS! hehe
+            
+
+                    // left boundaries
+                    for(var i = 1; i <= boundaries && i < current_page; i++){
+                        pagination.add(i);
+                    }
+                
+                    // left around
+                    for(var i = current_page-around; i < current_page; i++){
+                        if(i > 0)
+                            pagination.add(i);
+                    }
+
+                    // the current  page:
+                    pagination.add(current_page);
+
+                    // right around
+                    for(var i = current_page+1; i <= current_page+around && i <= total_pages; i++){
+                        pagination.add(i);
+                    }
+
+                    // right boundaries
+                    // the +1 because the last number is "inclusive"
+                    for(var i = (total_pages-boundaries)+1; i <= total_pages; i++){
+                        pagination.add(i);
+                    }
+                   
+
+                    this.populateItems(
+                        ((current_page * this.page_size) - this.page_size)+1,
+                        current_page * this.page_size
+                    );
+                    this.renderPaginationLinks(pagination.list,current_page,total_pages,page_size,boundaries,around);
+
+                    return pagination.list;
+                },
+                renderPaginationLinks: function(pagesArray,current_page,total_pages,page_size,boundaries,around){
+                    this.getPaginationContainer().innerHTML = '';
+                    for(var i = 0; i < pagesArray.length; i++){
+                        var pageLink = document.createElement('a');
+                        this.getPaginationContainer().appendChild(pageLink);
+
+                        pageLink.innerText = pagesArray[i];
+                        pageLink.href = '#';
+                        pageLink.onclick = function(e){
+                            window.paginationChallenge.configurePagination(parseInt(e.target.innerText),total_pages,page_size,boundaries,around);
+                        };
+
+                        if(pagesArray[i] === current_page){
+                            pageLink.style.fontSize = '20px'
+                            pageLink.style.textDecoration = 'none';
+
+                        }
+                        
+
+                        if(pagesArray[i+1] && Math.abs(pagesArray[i]-pagesArray[i+1]) !== 1){
+                            this.getPaginationContainer().append(' ... ');
+                        }
+
+                        if(i < pagesArray.length-1){
+                            this.getPaginationContainer().append(' ');
+                        }
+                    }
+                },
+            };
+
+        </script>
+    </head>
+    <body>
+        <div id="container">
+            <div id="container-header">
+                <h1>Pagination Challenge</h1>
+                <a href="#" id="change_configuration">Change configurations</a>
+
+                <div id="configurations">
+                    <h3>Configurations</h3>
+                    <div class="item">
+                        <label for="current_page">
+                            Current page:
+                        </label>
+                        <br/>
+                        <input type="number" id="current_page"/>
+                    </div>
+                    <div class="item">
+                        <label for="total_pages">
+                            Total pages:
+                        </label>
+                        <br/>
+                        <input type="number" id="total_pages"/>
+                    </div>
+                    <div class="item">
+                        <label for="page_size">
+                            Total items per page:
+                        </label>
+                        <br/>
+                        <input type="number" id="page_size"/>
+                    </div>
+                    <div class="item">
+                        <label for="boundaries">
+                            Boundaries:
+                        </label>
+                        <br/>
+                        <input type="number" id="boundaries"/>
+                    </div>
+                    <div class="item">
+                        <label for="around">
+                            Around:
+                        </label>
+                        <br/>
+                        <input type="number" id="around"/>
+                    </div>
+                    <button type="button" id="save_configurations">Save</button>
+                </div>
+            </div>
+            <div id="container-content">
+                <!-- Items will be populated here by a piece of javascript code :D -->
+            </div>
+            <div id="container-footer">
+                <div id="pagination">
+                    <!-- Pagination links will be populated here by some other piece of javascript code :D -->
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var configurationsBox = document.getElementById('configurations');
+
+            document.getElementById('change_configuration').onclick = function(e){
+                document.getElementById('total_pages').value = window.paginationChallenge.total_pages;
+                document.getElementById('page_size').value = window.paginationChallenge.page_size;
+                document.getElementById('current_page').value = window.paginationChallenge.current_page;
+                document.getElementById('boundaries').value = window.paginationChallenge.boundaries;
+                document.getElementById('around').value = window.paginationChallenge.around;
+
+                configurationsBox.style.display = 'block';
+            };
+
+            document.getElementById('save_configurations').onclick = function(e){
+                var total_pages = parseInt(document.getElementById('total_pages').value);
+                var page_size = parseInt(document.getElementById('page_size').value);
+                var current_page = parseInt(document.getElementById('current_page').value);
+                var boundaries = parseInt(document.getElementById('boundaries').value);
+                var around = parseInt(document.getElementById('around').value);
+
+                window.paginationChallenge.configurePagination(current_page,total_pages,page_size,boundaries,around);
+
+                configurationsBox.style.display = 'none';
+            };
+        </script>
+    </body>
+</html>

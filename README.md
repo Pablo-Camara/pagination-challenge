@@ -16,6 +16,4 @@ I've added another variable so we could play around with the script / app:
 
 page_size = Amount of items to be populated in each page
 
-In this case I simply populate each page accordingly to the page_size,
-the total_pages is not calculated based on a "total number of items" that we receive 
-from somewhere like it is usually done.
+In this case I simply populate each page accordingly to the page_size.
